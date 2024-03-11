@@ -20,6 +20,8 @@ int main(int argc, char** argv)
 
     // IMU model
     Param params;
+    std::cout<<"gyro_bias: "<< params.gyro_bias_sigma << std::endl; 
+    std::cout<<"acc_bias: "<< params.acc_bias_sigma << std::endl; 
     IMU imuGen(params);
 
     const char symbol[4] = {'|','/','-','\\'};

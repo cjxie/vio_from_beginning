@@ -137,9 +137,8 @@ void IMU::testImu(std::string src, std::string dist)
 
         MotionData imupose = imudata[i];
 
-        //delta_q = [1 , 1/2 * thetax , 1/2 * theta_y, 1/2 * theta_z]
         Eigen::Quaterniond dq;
-        Eigen::Vector3d dtheta_half =  imupose.imu_gyro * dt /2.0;
+        Eigen::Vector3d dtheta_half =  0.5 * (imupose.imu_gyro+imudata[i-1].imu_gyro)* dt /2.0;
         dq.w() = 1;
         dq.x() = dtheta_half.x();
         dq.y() = dtheta_half.y();
@@ -147,12 +146,19 @@ void IMU::testImu(std::string src, std::string dist)
         dq.normalize();
         
         /// imu 动力学模型 欧拉积分
-        Eigen::Vector3d acc_w = Qwb * (imupose.imu_acc) + gw;  // aw = Rwb * ( acc_body - acc_bias ) + gw
+        // Eigen::Vector3d acc_w = Qwb * (imupose.imu_acc) + gw;  // aw = Rwb * ( acc_body - acc_bias ) + gw
+        // Qwb = Qwb * dq;
+        // Pwb = Pwb + Vw * dt + 0.5 * dt * dt * acc_w;
+        // Vw = Vw + acc_w * dt;
+        
+        /// 中值积分
+        Eigen::Vector3d acc_old = Qwb * imudata[i-1].imu_acc + gw;
+        Eigen::Vector3d acc_new = Qwb * dq * imupose.imu_acc + gw;
+        Eigen::Vector3d acc_w = 0.5*(acc_old +acc_new); 
+        
         Qwb = Qwb * dq;
         Pwb = Pwb + Vw * dt + 0.5 * dt * dt * acc_w;
         Vw = Vw + acc_w * dt;
-        
-        /// 中值积分
 
         //　按着imu postion, imu quaternion , cam postion, cam quaternion 的格式存储，由于没有cam，所以imu存了两次
         save_points<<imupose.timestamp<<" "

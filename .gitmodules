@@ -1,0 +1,3 @@
+[submodule "lec02_imu/course2_hw_new/lec02_imu/course2_hw_new/vio_sim_ws/src/allan_variance_ros"]
+	path = lec02_imu/course2_hw_new/lec02_imu/course2_hw_new/vio_sim_ws/src/allan_variance_ros
+	url = https://github.com/ori-drs/allan_variance_ros.git
