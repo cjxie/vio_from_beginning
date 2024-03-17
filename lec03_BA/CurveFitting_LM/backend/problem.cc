@@ -90,6 +90,8 @@ bool Problem::Solve(int iterations) {
             //
             RemoveLambdaHessianLM();
 
+            lambdas_.push_back(currentLambda_);
+
             // 优化退出条件1： delta_x_ 很小则退出
             if (delta_x_.squaredNorm() <= 1e-6 || false_cnt > 10) {
                 stop = true;
@@ -249,14 +251,15 @@ void Problem::ComputeLambdaInitLM() {
 
     stopThresholdLM_ = 1e-6 * currentChi_;          // 迭代条件为 误差下降 1e-6 倍
 
-    double maxDiagonal = 0;
-    ulong size = Hessian_.cols();
-    assert(Hessian_.rows() == Hessian_.cols() && "Hessian is not square");
-    for (ulong i = 0; i < size; ++i) {
-        maxDiagonal = std::max(fabs(Hessian_(i, i)), maxDiagonal);
-    }
-    double tau = 1e-5;
-    currentLambda_ = tau * maxDiagonal;
+    // double maxDiagonal = 0;
+    // ulong size = Hessian_.cols();
+    // assert(Hessian_.rows() == Hessian_.cols() && "Hessian is not square");
+    // for (ulong i = 0; i < size; ++i) {
+    //     maxDiagonal = std::max(fabs(Hessian_(i, i)), maxDiagonal);
+    // }
+    // double tau = 1e-5;
+    // currentLambda_ = tau * maxDiagonal;
+    currentLambda_ = 0.2;
 }
 
 void Problem::AddLambdatoHessianLM() {
@@ -278,8 +281,10 @@ void Problem::RemoveLambdaHessianLM() {
 
 bool Problem::IsGoodStepInLM() {
     double scale = 0;
-    scale = delta_x_.transpose() * (currentLambda_ * delta_x_ + b_);
+    // scale = delta_x_.transpose() * (currentLambda_ * delta_x_ + b_);
+    scale = delta_x_.transpose() * (currentLambda_ * Hessian_.diagonal().asDiagonal() * delta_x_ + b_);
     scale += 1e-3;    // make sure it's non-zero :)
+    
 
     // recompute residuals after update state
     // 统计所有的残差
@@ -292,16 +297,19 @@ bool Problem::IsGoodStepInLM() {
     double rho = (currentChi_ - tempChi) / scale;
     if (rho > 0 && isfinite(tempChi))   // last step was good, 误差在下降
     {
-        double alpha = 1. - pow((2 * rho - 1), 3);
-        alpha = std::min(alpha, 2. / 3.);
-        double scaleFactor = (std::max)(1. / 3., alpha);
-        currentLambda_ *= scaleFactor;
-        ni_ = 2;
+        // double alpha = 1. - pow((2 * rho - 1), 3);
+        // alpha = std::min(alpha, 2. / 3.);
+        // double scaleFactor = (std::max)(1. / 3., alpha);
+        // currentLambda_ *= scaleFactor;
+        // ni_ = 2;
+        currentLambda_ = std::max(currentLambda_ / 11.0, 1e-7);
         currentChi_ = tempChi;
         return true;
     } else {
-        currentLambda_ *= ni_;
-        ni_ *= 2;
+        // currentLambda_ *= ni_;
+        // ni_ *= 2;
+
+        currentLambda_ = std::min(currentLambda_ * 9, 1e7);
         return false;
     }
 }

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <random>
 #include "backend/problem.h"
+#include <matplot/matplot.h>
 
 using namespace myslam::backend;
 using namespace std;
@@ -28,17 +29,18 @@ public:
     virtual void ComputeResidual() override
     {
         Vec3 abc = verticies_[0]->Parameters();  // 估计的参数
-        residual_(0) = std::exp( abc(0)*x_*x_ + abc(1)*x_ + abc(2) ) - y_;  // 构建残差
+        residual_(0) = std::exp(abc(0)*x_*x_ + abc(1)*x_ + abc(2)) - y_;  // 构建残差
     }
 
     // 计算残差对变量的雅克比
     virtual void ComputeJacobians() override
     {
         Vec3 abc = verticies_[0]->Parameters();
-        double exp_y = std::exp( abc(0)*x_*x_ + abc(1)*x_ + abc(2) );
+        double exp_y = std::exp(abc(0)*x_*x_ + abc(1)*x_ + abc(2) );
 
         Eigen::Matrix<double, 1, 3> jaco_abc;  // 误差为1维，状态量 3 个，所以是 1x3 的雅克比矩阵
-        jaco_abc << x_ * x_ * exp_y, x_ * exp_y , 1 * exp_y;
+        // jaco_abc << x_ * x_, x_ , 1 ;
+        jaco_abc << exp_y * x_ * x_, exp_y * x_ , exp_y ;
         jacobians_[0] = jaco_abc;
     }
     /// 返回边的类型信息
@@ -71,8 +73,8 @@ int main()
         double x = i/100.;
         double n = noise(generator);
         // 观测 y
-        double y = std::exp( a*x*x + b*x + c ) + n;
-//        double y = std::exp( a*x*x + b*x + c );
+        // double y = a*x*x + b*x + c  + n;
+        double y = std::exp( a*x*x + b*x + c) + n;
 
         // 每个观测对应的残差函数
         shared_ptr< CurveFittingEdge > edge(new CurveFittingEdge(x,y));
@@ -87,6 +89,15 @@ int main()
     std::cout<<"\nTest CurveFitting start..."<<std::endl;
     /// 使用 LM 求解
     problem.Solve(30);
+
+    std::vector<double> lambdas =  problem.lambdas_;
+    auto x = matplot::linspace(1, lambdas.size(),lambdas.size());
+    std::cout<<x.size()<<std::endl;
+    matplot::scatter(x, lambdas);
+    matplot::xlabel("step");
+    matplot::ylabel("Lambda");
+    matplot::title("阻尼因子 vs. 迭代次数");
+    matplot::show();
 
     std::cout << "-------After optimization, we got these parameters :" << std::endl;
     std::cout << vertex->Parameters().transpose() << std::endl;

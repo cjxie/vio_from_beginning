@@ -34,7 +34,8 @@ public:
     typedef std::map<unsigned long, std::shared_ptr<Vertex>> HashVertex;
     typedef std::unordered_map<unsigned long, std::shared_ptr<Edge>> HashEdge;
     typedef std::unordered_multimap<unsigned long, std::shared_ptr<Edge>> HashVertexIdToEdge;
-
+    std::vector<double> lambdas_;
+    
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
     Problem(ProblemType problemType);
@@ -138,6 +139,7 @@ private:
     /// PCG 迭代线性求解器
     VecX PCGSolver(const MatXX &A, const VecX &b, int maxIter);
 
+    
     double currentLambda_;
     double currentChi_;
     double stopThresholdLM_;    // LM 迭代退出阈值条件
