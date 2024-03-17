@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <eigen3/Eigen/Dense>
-#include <glog/logging.h>
+#include <Eigen/Dense>
+// #include <glog/logging.h>
 #include "backend/problem.h"
 #include "utils/tic_toc.h"
 
@@ -69,7 +69,7 @@ bool Problem::Solve(int iterations) {
     TicToc t_solve;
     // 统计优化变量的维数，为构建 H 矩阵做准备
     SetOrdering();
-    // 遍历edge, 构建 H = J^T * J 矩阵
+    // 遍历edge, 构建 H = J^T * J 矩阵， b = -J^T*res. Hdx=b
     MakeHessian();
     // LM 初始化
     ComputeLambdaInitLM();
@@ -106,6 +106,10 @@ bool Problem::Solve(int iterations) {
             if (oneStepSuccess) {
                 // 在新线性化点 构建 hessian
                 MakeHessian();
+
+                // plot the lambda versus iteration time
+                lambdas_.push_back(currentLambda_);
+
                 // TODO:: 这个判断条件可以丢掉，条件 b_max <= 1e-12 很难达到，这里的阈值条件不应该用绝对值，而是相对值
 //                double b_max = 0.0;
 //                for (int i = 0; i < b_.size(); ++i) {
@@ -175,6 +179,7 @@ void Problem::MakeHessian() {
             ulong dim_i = v_i->LocalDimension();
 
             MatXX JtW = jacobian_i.transpose() * edge.second->Information();
+            // ？ 
             for (size_t j = i; j < verticies.size(); ++j) {
                 auto v_j = verticies[j];
 

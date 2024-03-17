@@ -22,6 +22,7 @@ class CurveFittingEdge: public Edge
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     CurveFittingEdge( double x, double y ): Edge(1,1, std::vector<std::string>{"abc"}) {
+        // 传入变量和测量值
         x_ = x;
         y_ = y;
     }
