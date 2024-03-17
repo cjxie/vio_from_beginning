@@ -13,7 +13,7 @@ endif ()
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -g -Wall")
 
-FIND_PACKAGE( OpenMP REQUIRED)
+FIND_PACKAGE( OpenMP QUIET)
 if(OPENMP_FOUND)
     message("OPENMP FOUND")
     ADD_DEFINITIONS(-DUSE_OPENMP)
@@ -28,8 +28,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -DNDEBUG -Wno-reorder -O2" CACHE
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
-option(BUILD_APPS "Build APPs for slam course" YES)
-option(BUILD_TESTS "Build test for slam course" No)
+option(BUILD_APPS "Build APPs for slam course" ON)
+option(BUILD_TESTS "Build test for slam course" OFF)
 
 # third party libs
 # eigen
@@ -40,7 +40,6 @@ include_directories(${EIGEN_INCLUDE_DIR})
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-
 include_directories(${PROJECT_SOURCE_DIR})
 
 add_subdirectory(backend)
@@ -49,5 +48,3 @@ add_subdirectory(utils)
 if (BUILD_APPS)
     add_subdirectory(app)
 endif ()
-
-

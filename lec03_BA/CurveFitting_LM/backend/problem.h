@@ -138,6 +138,7 @@ private:
     /// PCG 迭代线性求解器
     VecX PCGSolver(const MatXX &A, const VecX &b, int maxIter);
 
+    std::vector<double> lambdas_;
     double currentLambda_;
     double currentChi_;
     double stopThresholdLM_;    // LM 迭代退出阈值条件
