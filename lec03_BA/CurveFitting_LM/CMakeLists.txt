@@ -12,13 +12,8 @@ if (NOT CMAKE_BUILD_TYPE)
 endif ()
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -g -Wall")
-<<<<<<< HEAD
 find_package(Matplot++ REQUIRED)
 FIND_PACKAGE( OpenMP REQUIRED)
-=======
-
-FIND_PACKAGE( OpenMP QUIET)
->>>>>>> 9f274cec85156a820eda44e69bdc1192302e0a4a
 if(OPENMP_FOUND)
     message("OPENMP FOUND")
     ADD_DEFINITIONS(-DUSE_OPENMP)
